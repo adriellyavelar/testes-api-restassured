@@ -3,10 +3,12 @@ package api_futebol;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import org.junit.Assert;
 import org.junit.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.in;
 
 public class TesteApiFutebol {
 
@@ -83,5 +85,36 @@ public class TesteApiFutebol {
         System.out.println("Segundo colocado é: "+segundoColocado);
         System.out.println("Terceiro colocado é: "+terceiroColocado);
         System.out.println("Quarto colocado é: "+quartoColocado);
+    }
+
+    @Test
+    public void exercicioTabelaCampeonato01E02() {
+
+        Response response;
+
+        String path = "/campeonatos/10/tabela";
+
+        response = given()
+                .spec(requestSpecification)
+                .log().all()
+                .header("Authorization", "Bearer test_4f24b86ec6fcd4f639fcc32aa77b56")
+                .when()
+                .get(path)
+                .then()
+                .log().all()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .response();
+
+        for (int i = 0; i < 20; i++) {
+            System.out.println((i+1) +"º - "+ response.path("["+i+"] .time.nome_popular"));
+        }
+
+        int primeiroColocado = response.path("[0] .pontos");
+        int ultimoColocado = response.path("[19] .pontos");
+
+        Assert.assertTrue("Primeiro colocado tem mais pontos que o último", primeiroColocado > ultimoColocado);
+
     }
 }
