@@ -1,6 +1,7 @@
 package api_futebol;
 
 import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.junit.Test;
 
@@ -13,7 +14,7 @@ public class TesteApiFutebol {
     RequestSpecification requestSpecification = new RequestSpecBuilder().setBaseUri(url).build();
 
     @Test
-    public void exercicio01_ApiFutebol() {
+    public void exercicio_ApiFutebol() {
 
         String path = "/campeonatos";
 
@@ -28,5 +29,59 @@ public class TesteApiFutebol {
                 .assertThat()
                 .statusCode(200)
                 .body(containsString("Campeonato Brasileiro 2025"));
+    }
+
+    @Test
+    public void exemploExtracaoDeInformacoesJsonPath() {
+
+        String path = "/campeonatos/10/tabela";
+
+        String primeiroColocado = given()
+                .spec(requestSpecification)
+                .log().all()
+                .header("Authorization", "Bearer test_4f24b86ec6fcd4f639fcc32aa77b56")
+                .when()
+                .get(path)
+                .then()
+                .log().all()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .path("[0] .time.nome_popular");
+
+        System.out.println("Primeiro colocado é: "+primeiroColocado);
+    }
+
+    @Test
+    public void exemploExtracaoDeInformacoesUtilizandoResponseJsonPath() {
+
+        Response response;
+
+        String path = "/campeonatos/10/tabela";
+
+        response = given()
+                .spec(requestSpecification)
+                .log().all()
+                .header("Authorization", "Bearer test_4f24b86ec6fcd4f639fcc32aa77b56")
+                .when()
+                .get(path)
+                .then()
+                .log().all()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .response();
+
+        String primeiroColocado, segundoColocado, terceiroColocado, quartoColocado;
+
+        primeiroColocado = response.path("[0] .time.nome_popular");
+        segundoColocado = response.path("[1] .time.nome_popular");
+        terceiroColocado = response.path("[2] .time.nome_popular");
+        quartoColocado = response.path("[3] .time.nome_popular");
+
+        System.out.println("Primeiro colocado é: "+primeiroColocado);
+        System.out.println("Segundo colocado é: "+segundoColocado);
+        System.out.println("Terceiro colocado é: "+terceiroColocado);
+        System.out.println("Quarto colocado é: "+quartoColocado);
     }
 }
